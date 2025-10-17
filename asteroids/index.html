@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><title>Asteroids-ish</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<div style="max-width:740px;margin:20px auto;padding:12px;background:#111;color:#eee">
+  <h1 style="margin:0 0 12px;font:600 28px/1.2 system-ui">Asteroids-ish</h1>
+  <canvas id="fx" width="720" height="480" style="width:100%;display:block;background:#000;border:2px solid #333"></canvas>
+  <p style="opacity:.8;margin:.5rem 0 0">?/? rotate · ? thrust · Space shoot · R restart</p>
+</div>
+<script>
+(()=>{const c=document.getElementById('fx'),g=c.getContext("2d"),W=c.width,H=c.height,TAU=Math.PI*2;
+let keys={},bul=[],rocks=[],t=0;const rand=(a,b)=>a+Math.random()*(b-a),wrap=(x,m)=>(x%m+m)%m;
+addEventListener('keydown',e=>keys[e.key]=true);addEventListener('keyup',e=>keys[e.key]=false);
+function spawnRocks(n=6){rocks=[];for(let i=0;i<n;i++){const r=rand(18,36),a=rand(0,TAU);
+rocks.push({x:rand(0,W),y:rand(0,H),vx:Math.cos(a)*rand(0.4,1.2),vy:Math.sin(a)*rand(0.4,1.2),r})}}
+let ship={x:W/2,y:H/2,a:-Math.PI/2,vx:0,vy:0,alive:true};spawnRocks();
+function reset(){bul.length=0;ship={x:W/2,y:H/2,a:-Math.PI/2,vx:0,vy:0,alive:true};spawnRocks()}
+function shoot(){const sp=7;bul.push({x:ship.x+Math.cos(ship.a)*14,y:ship.y+Math.sin(ship.a)*14,vx:Math.cos(ship.a)*sp+ship.vx,vy:Math.sin(ship.a)*sp+ship.vy,t:0})}
+function step(){t++;if(keys['r']||keys['R'])reset();
+if(ship.alive){if(keys['ArrowLeft'])ship.a-=0.07;if(keys['ArrowRight'])ship.a+=0.07;if(keys['ArrowUp']){ship.vx+=Math.cos(ship.a)*0.12;ship.vy+=Math.sin(ship.a)*0.12}
+if(keys[' ']){if(!(t%7))shoot()}ship.vx*=0.995;ship.vy*=0.995;ship.x=wrap(ship.x+ship.vx,W);ship.y=wrap(ship.y+ship.vy,H)}
+for(let i=bul.length-1;i>=0;i--){const b=bul[i];b.x+=b.vx;b.y+=b.vy;b.t++;b.x=wrap(b.x,W);b.y=wrap(b.y,H);if(b.t>180)bul.splice(i,1)}
+for(let i=rocks.length-1;i>=0;i--){const r=rocks[i];r.x=wrap(r.x+r.vx,W);r.y=wrap(r.y+r.vy,H);
+for(let j=bul.length-1;j>=0;j--){const b=bul[j],dx=r.x-b.x,dy=r.y-b.y;if(dx*dx+dy*dy<r.r*r.r){
+bul.splice(j,1);rocks.splice(i,1);if(r.r>20){for(let k=0;k<2;k++){const ang=rand(0,TAU),nr=r.r*0.6;
+rocks.push({x:r.x,y:r.y,vx:Math.cos(ang)*rand(0.6,1.4),vy:Math.sin(ang)*rand(0.6,1.4),r:nr})}}break}}
+if(ship.alive){const dx=r.x-ship.x,dy=r.y-ship.y;if(dx*dx+dy*dy<(r.r+10)*(r.r+10))ship.alive=false}}
+if(!rocks.length)spawnRocks(8);
+g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.fillStyle="#113";g.fillRect(0,0,W,H);
+for(let i=0;i<80;i++){g.fillStyle="#223";g.fillRect((i*37+t)%W,(i*91)%H,1,1)}
+g.strokeStyle="#0af";g.lineWidth=2;for(const r of rocks){g.beginPath();
+for(let a=0;a<8;a++){const ang=a*(TAU/8)+(t*0.002),rr=r.r*(0.75+0.35*Math.sin(a*2.3));
+g.lineTo(r.x+Math.cos(ang)*rr,r.y+Math.sin(ang)*rr)}g.closePath();g.stroke()}
+g.fillStyle="#ff0";for(const b of bul){g.fillRect(b.x-2,b.y-2,4,4)}
+if(ship.alive){g.save();g.translate(ship.x,ship.y);g.rotate(ship.a);g.strokeStyle="#fff";g.lineWidth=2;g.beginPath();
+g.moveTo(14,0);g.lineTo(-10,8);g.lineTo(-6,0);g.lineTo(-10,-8);g.closePath();g.stroke();
+if(keys['ArrowUp']){g.strokeStyle="#f80";g.beginPath();g.moveTo(-10,0);g.lineTo(-18,0);g.stroke()}g.restore()}
+else{g.fillStyle="#fff";g.font="20px system-ui";g.fillText("Boom! Press R",W/2-70,H/2)}
+requestAnimationFrame(step)} step()})();
+</script>

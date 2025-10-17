@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><title>Pacman-ish</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<div style="max-width:720px;margin:20px auto;padding:12px;background:#111;color:#eee">
+  <h1 style="margin:0 0 12px;font:600 28px/1.2 system-ui">Pacman-ish</h1>
+  <canvas id="game" width="448" height="496" style="width:100%;display:block;background:#000;border:2px solid #333"></canvas>
+  <p style="opacity:.8;margin:.5rem 0 0">Use arrow keys. Eat the dots. Refresh to reset.</p>
+</div>
+<script>
+(()=>{const c=document.getElementById('game'),g=c.getContext('2d');
+const COLS=14,ROWS=16,TILE=32;
+const map=Array.from({length:ROWS},(_,r)=>Array.from({length:COLS},(_,q)=>(r===0||q===0||r===ROWS-1||q===COLS-1||(r%2===0&&q%2===0))?0:1));
+map[1][1]=2;map[1][2]=2;map[2][1]=2;let pac={x:1.5*TILE,y:1.5*TILE,dx:0,dy:0,speed:2.2,mouth:0},keys={};
+addEventListener('keydown',e=>keys[e.key]=true);addEventListener('keyup',e=>keys[e.key]=false);
+const tileAt=(px,py)=>{const col=Math.floor(px/TILE),row=Math.floor(py/TILE);return map[row]?.[col]??0;}
+const canMove=(nx,ny)=>{const r=12,pts=[[nx-r,ny-r],[nx+r,ny-r],[nx-r,ny+r],[nx+r,ny+r]];return pts.every(([x,y])=>tileAt(x,y)!==0);}
+function step(){if(keys.ArrowLeft){pac.dx=-1;pac.dy=0} if(keys.ArrowRight){pac.dx=1;pac.dy=0}
+if(keys.ArrowUp){pac.dx=0;pac.dy=-1} if(keys.ArrowDown){pac.dx=0;pac.dy=1}
+const nx=pac.x+pac.dx*pac.speed,ny=pac.y+pac.dy*pac.speed;if(canMove(nx,ny)){pac.x=nx;pac.y=ny}
+const col=Math.floor(pac.x/TILE),row=Math.floor(pac.y/TILE);if(map[row]?.[col]===1)map[row][col]=2
+g.clearRect(0,0,c.width,c.height);for(let r=0;r<ROWS;r++)for(let q=0;q<COLS;q++){
+if(map[r][q]===0){g.fillStyle='#0af';g.fillRect(q*TILE,r*TILE,TILE,TILE)}
+else if(map[r][q]===1){g.fillStyle='#fffa';g.beginPath();g.arc(q*TILE+TILE/2,r*TILE+TILE/2,3,0,Math.PI*2);g.fill()}}
+const angle=Math.atan2(pac.dy,pac.dx)||0;pac.mouth=(pac.mouth+0.15)%1;const m=Math.abs(Math.sin(pac.mouth*Math.PI))*0.6;
+g.fillStyle='#ff0';g.beginPath();g.moveTo(pac.x,pac.y);g.arc(pac.x,pac.y,12,angle+m,angle-m+Math.PI*2);g.lineTo(pac.x,pac.y);g.fill();
+requestAnimationFrame(step)} step()})();
+</script>
