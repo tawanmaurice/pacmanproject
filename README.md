@@ -6,5 +6,3 @@ Welcome to my Pac-Man game hosted on GitHub Pages!
 
 ---
 
-## Other Games
-- [Asteroids](https://tawanmaurice.github.io/pacmanproject/asteroids/)
